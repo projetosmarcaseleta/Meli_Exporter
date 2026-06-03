@@ -48,6 +48,7 @@ if [ ! -f "$APP_DIR/.env" ]; then
 PORT=3002
 FLASK_DEBUG=0
 SECRET_KEY=ALTERE_PARA_UMA_CHAVE_SEGURA
+PUBLIC_EXPORT_URL=https://app.marcaseleta.shop/export
 EOF
     echo "  ⚠️  IMPORTANTE: Edite /var/www/Meli_Exporter/.env com suas configurações!"
 fi
@@ -65,7 +66,8 @@ echo "============================================"
 echo "  ✅ Setup concluído!"
 echo "============================================"
 echo ""
-echo "  📍 App rodando em: http://195.200.0.29:3002"
+echo "  📍 App público: https://app.marcaseleta.shop/export"
+echo "  📍 App local:   http://127.0.0.1:3002/export"
 echo "  📁 Diretório: $APP_DIR"
 echo "  🔧 Serviço: systemctl status meli-exporter"
 echo ""

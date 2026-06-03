@@ -8,7 +8,7 @@ import io
 import uuid
 import json
 
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 
@@ -23,6 +23,7 @@ except ImportError:
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "relatorios-meli-dev")
+PUBLIC_EXPORT_URL = os.environ.get("PUBLIC_EXPORT_URL", "https://app.marcaseleta.shop/export")
 
 
 def _write_excel(rows: list) -> io.BytesIO:
@@ -56,10 +57,17 @@ def _write_excel(rows: list) -> io.BytesIO:
 
 @app.route("/")
 def index():
+    return redirect(PUBLIC_EXPORT_URL, code=302)
+
+
+@app.route("/export")
+@app.route("/export/")
+def export_index():
     return render_template("index.html")
 
 
 @app.route("/api/validate_token", methods=["POST"])
+@app.route("/export/api/validate_token", methods=["POST"])
 def api_validate_token():
     data = request.json or {}
     token = (data.get("token") or "").strip()
@@ -73,6 +81,7 @@ def api_validate_token():
 
 
 @app.route("/api/export", methods=["POST"])
+@app.route("/export/api/export", methods=["POST"])
 def api_export():
     data     = request.json or {}
     token    = (data.get("token") or "").strip()

@@ -622,7 +622,7 @@
     $('btn-validate').textContent = '...';
     $('btn-validate').disabled = true;
     try {
-      const res  = await fetch('/api/validate_token', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token}) });
+      const res  = await fetch('{{ url_for("api_validate_token") }}', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token}) });
       const data = await res.json();
       if (data.valid) { chip.className = 'token-status ok'; chip.textContent = `✓ ${data.nickname} · ID ${data.id}`; }
       else            { chip.className = 'token-status err'; chip.textContent = data.error; }
@@ -647,7 +647,7 @@
     const t = setInterval(() => { p = Math.min(p + 4, 88); showProg(p, `Buscando ${mlbs.length} produto(s)...`); }, 200);
 
     try {
-      const res = await fetch('/api/export', {
+      const res = await fetch('{{ url_for("api_export") }}', {
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({token, mlbs})
