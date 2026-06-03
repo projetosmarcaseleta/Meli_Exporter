@@ -1,0 +1,16 @@
+[Unit]
+Description=Meli Exporter - Relatórios Mercado Livre
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/Meli_Exporter/ml_exporter
+Environment="PATH=/var/www/Meli_Exporter/venv/bin:/usr/bin"
+EnvironmentFile=/var/www/Meli_Exporter/.env
+ExecStart=/var/www/Meli_Exporter/venv/bin/gunicorn --bind 0.0.0.0:3002 --workers 2 --timeout 120 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

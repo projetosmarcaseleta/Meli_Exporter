@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seleta Export</title>
+  <meta name="description" content="Seleta Export — Exporte dados de anúncios do Mercado Livre em planilhas Excel." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #09090F;
+      --surface:       #111118;
+      --surface-2:     #16161F;
+      --border:        rgba(255,255,255,.07);
+      --border-focus:  rgba(99,179,255,.45);
+      --text:          #F0F2F8;
+      --text-2:        rgba(255,255,255,.48);
+      --text-3:        rgba(255,255,255,.24);
+      --blue:          #63B3FF;
+      --violet:        #A78BFA;
+      --pink:          #F472B6;
+      --green:         #34D399;
+      --amber:         #FBBF24;
+      --grad:          linear-gradient(135deg,#63B3FF 0%,#A78BFA 55%,#F472B6 100%);
+      --glow:          rgba(99,179,255,.10);
+      --r:             13px;
+      --r-sm:          9px;
+      --ease:          .2s cubic-bezier(.4,0,.2,1);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* glow decorativo */
+    body::before {
+      content:'';
+      position:fixed;
+      top:-30%;left:50%;
+      transform:translateX(-50%);
+      width:700px;height:400px;
+      background:radial-gradient(ellipse,rgba(99,179,255,.07) 0%,transparent 70%);
+      pointer-events:none;
+      z-index:0;
+    }
+
+    /* ── TOPBAR ─────────────────────────────── */
+    .topbar {
+      width:100%;
+      max-width:700px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:28px 0 0;
+      z-index:1;
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:11px;
+    }
+    .brand-icon {
+      width:38px;height:38px;
+      border-radius:11px;
+      background:var(--grad);
+      display:grid;
+      place-items:center;
+      box-shadow:0 0 22px rgba(99,179,255,.2);
+      flex-shrink:0;
+    }
+    .brand-name {
+      font-size:15px;
+      font-weight:700;
+      letter-spacing:-.3px;
+    }
+    .brand-name em {
+      font-style:normal;
+      background:var(--grad);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+
+    .topbar-badge {
+      font-size:11px;
+      font-weight:600;
+      color:var(--text-3);
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--border);
+      padding:4px 12px;
+      border-radius:20px;
+    }
+
+    /* ── HERO ───────────────────────────────── */
+    .hero {
+      width:100%;
+      max-width:700px;
+      padding:52px 0 36px;
+      z-index:1;
+    }
+    .hero h1 {
+      font-size:40px;
+      font-weight:900;
+      line-height:1.15;
+      letter-spacing:-1.2px;
+      margin-bottom:16px;
+    }
+    .hero h1 .g {
+      background:var(--grad);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .hero p {
+      font-size:15px;
+      color:var(--text-2);
+      line-height:1.7;
+      max-width:520px;
+    }
+
+    /* ── MAIN CARD ──────────────────────────── */
+    .card {
+      width:100%;
+      max-width:700px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:36px 40px;
+      z-index:1;
+      display:flex;
+      flex-direction:column;
+      gap:28px;
+      margin-bottom:48px;
+      box-shadow:0 8px 48px rgba(0,0,0,.35);
+      animation:fadeUp .45s ease-out;
+    }
+    @keyframes fadeUp {
+      from{opacity:0;transform:translateY(14px)}
+      to  {opacity:1;transform:translateY(0)}
+    }
+
+    /* ── FORM SECTION ───────────────────────── */
+    .section-title {
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--text-3);
+      margin-bottom:14px;
+    }
+
+    .fields {
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+
+    .field {
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .field-label {
+      font-size:12.5px;
+      font-weight:600;
+      color:var(--text-2);
+      letter-spacing:.02em;
+    }
+    .field-label .opt {
+      font-weight:400;
+      color:var(--text-3);
+    }
+
+    .input-row {
+      display:flex;
+      gap:8px;
+    }
+    .input-row input { flex:1; }
+
+    input[type="text"], textarea {
+      font-family:'Inter',sans-serif;
+      font-size:13.5px;
+      color:var(--text);
+      background:var(--surface-2);
+      border:1.5px solid var(--border);
+      border-radius:var(--r-sm);
+      padding:12px 16px;
+      width:100%;
+      outline:none;
+      transition:border-color var(--ease), box-shadow var(--ease), background var(--ease);
+    }
+    input[type="text"]:hover, textarea:hover {
+      background:rgba(255,255,255,.06);
+    }
+    input[type="text"]:focus, textarea:focus {
+      border-color:var(--border-focus);
+      box-shadow:0 0 0 3px var(--glow);
+      background:rgba(99,179,255,.04);
+    }
+    textarea {
+      resize:vertical;
+      min-height:150px;
+      font-family:'JetBrains Mono',monospace;
+      font-size:13px;
+      line-height:1.85;
+    }
+    ::placeholder { color:rgba(255,255,255,.18); }
+
+    .hint {
+      font-size:11.5px;
+      color:var(--text-3);
+    }
+
+    /* ── VERIFY BTN ─────────────────────────── */
+    .btn-verify {
+      font-family:'Inter',sans-serif;
+      font-size:13px;
+      font-weight:600;
+      color:var(--text-2);
+      background:var(--surface-2);
+      border:1.5px solid var(--border);
+      border-radius:var(--r-sm);
+      padding:12px 20px;
+      cursor:pointer;
+      white-space:nowrap;
+      transition:all var(--ease);
+    }
+    .btn-verify:hover:not(:disabled) {
+      border-color:var(--border-focus);
+      color:var(--blue);
+      background:rgba(99,179,255,.06);
+    }
+    .btn-verify:disabled { opacity:.35; cursor:not-allowed; }
+
+    /* ── TOKEN STATUS ───────────────────────── */
+    .token-status {
+      display:none;
+      font-size:12px;
+      font-weight:600;
+      padding:8px 14px;
+      border-radius:var(--r-sm);
+      width:fit-content;
+      align-items:center;
+      gap:8px;
+      animation:fadeUp .3s ease-out;
+    }
+    .token-status.ok  { display:flex; background:rgba(52,211,153,.08); color:var(--green); border:1px solid rgba(52,211,153,.2); }
+    .token-status.err { display:flex; background:rgba(251,113,133,.08); color:#FB7185;      border:1px solid rgba(251,113,133,.2); }
+
+    /* ── DIVIDER ────────────────────────────── */
+    .divider {
+      height:1px;
+      background:var(--border);
+    }
+
+    /* ── COL TAGS (chips) ───────────────────── */
+    .cols-wrap {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .col-chips {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+    .col-chip {
+      display:flex;
+      align-items:center;
+      gap:7px;
+      background:var(--surface-2);
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:7px 13px;
+      transition:border-color var(--ease), background var(--ease);
+    }
+    .col-chip:hover {
+      border-color:rgba(255,255,255,.13);
+      background:rgba(255,255,255,.05);
+    }
+    .chip-dot {
+      width:6px;height:6px;
+      border-radius:50%;
+      flex-shrink:0;
+    }
+    .chip-dot.blue   { background:var(--blue);   box-shadow:0 0 7px rgba(99,179,255,.5); }
+    .chip-dot.violet { background:var(--violet);  box-shadow:0 0 7px rgba(167,139,250,.5); }
+    .chip-dot.amber  { background:var(--amber);   box-shadow:0 0 7px rgba(251,191,36,.5); }
+    .chip-dot.pink   { background:var(--pink);    box-shadow:0 0 7px rgba(244,114,182,.5); }
+    .chip-dot.green  { background:var(--green);   box-shadow:0 0 7px rgba(52,211,153,.5); }
+
+    .chip-name {
+      font-family:'JetBrains Mono',monospace;
+      font-size:11.5px;
+      font-weight:500;
+      color:#E2E8F0;
+    }
+    .chip-tag {
+      font-size:10.5px;
+      color:var(--text-3);
+      margin-left:2px;
+    }
+
+    /* ── PROGRESS ───────────────────────────── */
+    .progress-card {
+      display:none;
+      flex-direction:column;
+      gap:10px;
+      background:var(--surface-2);
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      padding:18px 20px;
+      animation:fadeUp .3s ease-out;
+    }
+    .progress-card.on { display:flex; }
+    .prog-top {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .prog-label {
+      font-size:13px;
+      font-weight:600;
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      gap:9px;
+    }
+    .spinner {
+      width:14px;height:14px;
+      border:2px solid rgba(99,179,255,.2);
+      border-top-color:var(--blue);
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+      flex-shrink:0;
+    }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .prog-pct {
+      font-family:'JetBrains Mono',monospace;
+      font-size:13px;
+      font-weight:600;
+      background:var(--grad);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .track {
+      height:4px;
+      background:rgba(255,255,255,.06);
+      border-radius:99px;
+      overflow:hidden;
+    }
+    .fill {
+      height:100%;
+      width:0%;
+      background:var(--grad);
+      border-radius:99px;
+      transition:width .35s ease;
+      box-shadow:0 0 10px rgba(99,179,255,.3);
+    }
+    .prog-detail { font-size:11.5px; color:var(--text-3); }
+
+    /* ── RESULT ─────────────────────────────── */
+    .result-card {
+      display:none;
+      border-radius:var(--r);
+      padding:14px 18px;
+      font-size:13px;
+      font-weight:600;
+      align-items:center;
+      gap:10px;
+      animation:fadeUp .3s ease-out;
+    }
+    .result-card.ok  { display:flex; background:rgba(52,211,153,.08); color:var(--green); border:1px solid rgba(52,211,153,.2); }
+    .result-card.err { display:flex; background:rgba(251,113,133,.08); color:#FB7185;      border:1px solid rgba(251,113,133,.2); }
+
+    /* ── WARNINGS ───────────────────────────── */
+    .warn-card {
+      display:none;
+      background:rgba(251,191,36,.06);
+      border:1px solid rgba(251,191,36,.15);
+      border-radius:var(--r);
+      padding:16px 18px;
+      animation:fadeUp .3s ease-out;
+    }
+    .warn-card.on { display:block; }
+    .warn-title {
+      font-size:10.5px;
+      font-weight:700;
+      color:var(--amber);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin-bottom:10px;
+    }
+    .warn-list {
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+    }
+    .warn-list li {
+      font-size:11.5px;
+      color:rgba(251,191,36,.65);
+      font-family:'JetBrains Mono',monospace;
+    }
+
+    /* ── EXPORT BTN ─────────────────────────── */
+    .btn-export {
+      font-family:'Inter',sans-serif;
+      font-size:14.5px;
+      font-weight:700;
+      width:100%;
+      background:var(--grad);
+      color:#fff;
+      border:none;
+      border-radius:var(--r);
+      padding:16px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      letter-spacing:-.2px;
+      position:relative;
+      overflow:hidden;
+      transition:all var(--ease);
+      box-shadow:0 4px 28px rgba(99,179,255,.15);
+    }
+    .btn-export::before {
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 60%);
+      opacity:0;
+      transition:opacity var(--ease);
+    }
+    .btn-export:hover:not(:disabled)::before { opacity:1; }
+    .btn-export:hover:not(:disabled) {
+      transform:translateY(-1px);
+      box-shadow:0 8px 36px rgba(99,179,255,.25);
+    }
+    .btn-export:active:not(:disabled) { transform:scale(.995); }
+    .btn-export:disabled { opacity:.35; cursor:not-allowed; }
+
+    /* ── FOOTER ─────────────────────────────── */
+    .footer {
+      font-size:12px;
+      color:var(--text-3);
+      padding-bottom:40px;
+      z-index:1;
+      display:flex;
+      align-items:center;
+      gap:7px;
+    }
+    .footer-dot {
+      width:5px;height:5px;
+      border-radius:50%;
+      background:var(--blue);
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100%{opacity:.3}
+      50%{opacity:1}
+    }
+
+    /* ── RESPONSIVE ─────────────────────────── */
+    @media(max-width:740px){
+      .topbar,.hero,.card,.footer { max-width:100%; padding-left:20px; padding-right:20px; }
+      .card { padding:24px 20px; border-radius:14px; margin:0 12px 40px; }
+      .hero h1 { font-size:28px; }
+      .topbar { padding:20px 0 0; }
+      .hero { padding:36px 0 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Topbar ─── -->
+  <nav class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      <span class="brand-name">Seleta <em>Export</em></span>
+    </div>
+    <span class="topbar-badge">Marca Seleta · Uso interno</span>
+  </nav>
+
+  <!-- ── Hero ─── -->
+  <section class="hero">
+    <h1>Exporte dados do<br/><span class="g">Mercado Livre</span><br/>em segundos.</h1>
+    <p>Informe os códigos MLB, conecte seu token e baixe uma planilha Excel completa com os dados dos seus anúncios.</p>
+  </section>
+
+  <!-- ── Card principal ─── -->
+  <div class="card">
+
+    <!-- Campos de entrada -->
+    <div class="fields">
+      <div class="section-title">Configuração</div>
+
+      <!-- Token -->
+      <div class="field">
+        <label class="field-label" for="input-token">Token do Mercado Livre</label>
+        <div class="input-row">
+          <input id="input-token" type="text" placeholder="APP_USR-0000000000000000-..." />
+          <button id="btn-validate" class="btn-verify" type="button">Verificar</button>
+        </div>
+        <div id="token-chip" class="token-status"></div>
+      </div>
+
+      <!-- MLBs -->
+      <div class="field">
+        <label class="field-label" for="input-mlbs">Códigos MLB <span class="opt">— um por linha</span></label>
+        <textarea id="input-mlbs" placeholder="MLB3691234567&#10;MLB3691234568&#10;MLB3691234569"></textarea>
+        <span class="hint">Aceita vírgula, espaço ou quebra de linha.</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Colunas exportadas -->
+    <div class="cols-wrap">
+      <div class="section-title">Colunas exportadas</div>
+      <div class="col-chips">
+        <div class="col-chip">
+          <div class="chip-dot blue"></div>
+          <span class="chip-name">SKU</span>
+          <span class="chip-tag">seller_custom_field</span>
+        </div>
+        <div class="col-chip">
+          <div class="chip-dot violet"></div>
+          <span class="chip-name">MLB</span>
+          <span class="chip-tag">id do anúncio</span>
+        </div>
+        <div class="col-chip">
+          <div class="chip-dot amber"></div>
+          <span class="chip-name">TIPO ANÚNCIO</span>
+          <span class="chip-tag">via API</span>
+        </div>
+        <div class="col-chip">
+          <div class="chip-dot pink"></div>
+          <span class="chip-name">CATÁLOGO</span>
+          <span class="chip-tag">Sim / Não</span>
+        </div>
+        <div class="col-chip">
+          <div class="chip-dot green"></div>
+          <span class="chip-name">QTD VENDIDA</span>
+          <span class="chip-tag">sold_quantity</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Progress -->
+    <div id="prog" class="progress-card">
+      <div class="prog-top">
+        <span class="prog-label">
+          <span class="spinner"></span>
+          Buscando produtos
+        </span>
+        <span id="prog-num" class="prog-pct">0%</span>
+      </div>
+      <div class="track"><div id="prog-fill" class="fill"></div></div>
+      <span id="prog-msg" class="prog-detail">Aguarde...</span>
+    </div>
+
+    <!-- Result -->
+    <div id="result" class="result-card"></div>
+
+    <!-- Warnings -->
+    <div id="warn" class="warn-card">
+      <div class="warn-title">Avisos</div>
+      <ul id="warn-list" class="warn-list"></ul>
+    </div>
+
+    <!-- Export button -->
+    <button id="btn-export" class="btn-export" type="button">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Gerar planilha
+    </button>
+
+  </div>
+
+  <!-- ── Footer ─── -->
+  <div class="footer">
+    <div class="footer-dot"></div>
+    Seleta Export · até 20 MLBs por requisição
+  </div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function parseMLBs(raw) {
+    return raw.split(/[\n,;\s]+/).map(s => s.trim().toUpperCase()).filter(s => /^MLB\d+$/.test(s));
+  }
+
+  $('btn-validate').addEventListener('click', async () => {
+    const token = $('input-token').value.trim();
+    const chip  = $('token-chip');
+    if (!token) { chip.className = 'token-status err'; chip.textContent = 'Cole o token primeiro.'; return; }
+    $('btn-validate').textContent = '...';
+    $('btn-validate').disabled = true;
+    try {
+      const res  = await fetch('/api/validate_token', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({token}) });
+      const data = await res.json();
+      if (data.valid) { chip.className = 'token-status ok'; chip.textContent = `✓ ${data.nickname} · ID ${data.id}`; }
+      else            { chip.className = 'token-status err'; chip.textContent = data.error; }
+    } catch { chip.className = 'token-status err'; chip.textContent = 'Erro de conexão.'; }
+    finally  { $('btn-validate').textContent = 'Verificar'; $('btn-validate').disabled = false; }
+  });
+
+  $('btn-export').addEventListener('click', async () => {
+    const token = $('input-token').value.trim();
+    const mlbs  = parseMLBs($('input-mlbs').value);
+
+    $('result').className = 'result-card';
+    $('warn').className   = 'warn-card';
+    $('btn-export').disabled = true;
+    $('btn-export').innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff"></span> Processando...';
+    showProg(0, 'Iniciando...');
+
+    if (!token) return done('err', 'Informe o token do Mercado Livre.');
+    if (!mlbs.length) return done('err', 'Nenhum código MLB válido encontrado.');
+
+    let p = 0;
+    const t = setInterval(() => { p = Math.min(p + 4, 88); showProg(p, `Buscando ${mlbs.length} produto(s)...`); }, 200);
+
+    try {
+      const res = await fetch('/api/export', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({token, mlbs})
+      });
+      clearInterval(t);
+      showProg(100, 'Concluído!');
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if ((err.warnings||[]).length) showWarn(err.warnings);
+        return done('err', err.error || `Erro HTTP ${res.status}`);
+      }
+
+      const count = res.headers.get('X-Export-Count') || '?';
+      const warns = JSON.parse(res.headers.get('X-Export-Warnings') || '[]');
+      const blob  = await res.blob();
+      const fname = res.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] || 'Relatorio_MLB.xlsx';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+
+      if (warns.length) showWarn(warns);
+      done('ok', `✓ ${count} produto(s) exportado(s) com sucesso.`);
+    } catch {
+      clearInterval(t);
+      done('err', 'Erro de conexão com o servidor.');
+    }
+  });
+
+  function showProg(pct, msg) {
+    $('prog').classList.add('on');
+    $('prog-fill').style.width = pct + '%';
+    $('prog-num').textContent  = pct + '%';
+    $('prog-msg').textContent  = msg;
+  }
+
+  function done(type, msg) {
+    const el = $('result');
+    el.className = `result-card ${type}`;
+    el.textContent = msg;
+    $('btn-export').disabled = false;
+    $('btn-export').innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Gerar planilha`;
+  }
+
+  function showWarn(list) {
+    const ul = $('warn-list');
+    ul.innerHTML = '';
+    list.slice(0, 50).forEach(w => {
+      const li = document.createElement('li');
+      li.textContent = w;
+      ul.appendChild(li);
+    });
+    $('warn').classList.add('on');
+  }
+</script>
+</body>
+</html>
