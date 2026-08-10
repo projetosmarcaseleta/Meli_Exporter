@@ -1,6 +1,6 @@
 """
 app.py – Interface web Flask para Relatorios Meli
-Gera planilha Excel com: SKU | MLB | TIPO ANÚNCIO | CATÁLOGO | QTD VENDIDA
+Gera planilha Excel com: SKU | MLB | TIPO ANÚNCIO | TIPO ENVIO | CATÁLOGO | QTD VENDIDA
 """
 
 import os
@@ -45,7 +45,7 @@ def _write_excel(rows: list) -> io.BytesIO:
             ws.cell(row=row_idx, column=col_idx, value=value)
 
     # Ajusta largura das colunas automaticamente
-    col_widths = {"SKU": 20, "MLB": 16, "TIPO ANÚNCIO": 16, "CATÁLOGO": 12, "QTD VENDIDA": 14}
+    col_widths = {"SKU": 20, "MLB": 16, "TIPO ANÚNCIO": 16, "TIPO ENVIO": 16, "CATÁLOGO": 12, "QTD VENDIDA": 14}
     for col_idx, header in enumerate(rows[0], start=1):
         ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = col_widths.get(header, 15)
 

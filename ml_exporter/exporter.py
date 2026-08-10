@@ -1,20 +1,20 @@
 """
-exporter.py – Extrai 5 campos de uma lista de MLBs em batch + paralelo.
+exporter.py – Extrai 6 campos de uma lista de MLBs em batch + paralelo.
 
-Campos: SKU | MLB | TIPO ANÚNCIO | CATÁLOGO | QTD VENDIDA
+Campos: SKU | MLB | TIPO ANÚNCIO | TIPO ENVIO | CATÁLOGO | QTD VENDIDA
 
 Fluxo:
   Fase 1 – Batch de até 20 MLBs por requisição, batches em paralelo
-  Fase 2 – Monta linhas com os 5 campos
+  Fase 2 – Monta linhas com os 6 campos
 """
 
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from api import get_products_batch, BATCH_SIZE, LISTING_LABELS
+from api import get_products_batch, BATCH_SIZE, LISTING_LABELS, LOGISTIC_LABELS
 from config import MAX_WORKERS
 
-HEADERS = ["SKU", "MLB", "TIPO ANÚNCIO", "CATÁLOGO", "QTD VENDIDA"]
+HEADERS = ["SKU", "MLB", "TIPO ANÚNCIO", "TIPO ENVIO", "CATÁLOGO", "QTD VENDIDA"]
 
 
 def _resolve_sku(produto: dict) -> str:
@@ -26,12 +26,32 @@ def _resolve_sku(produto: dict) -> str:
     return sku
 
 
+def _resolve_tipo_envio(produto: dict) -> str:
+    """
+    Resolve tipo de envio a partir de produto['shipping'].
+    Verifica primeiro 'logistic_type' (ex: fulfillment, self_service, cross_docking, drop_off).
+    Caso não definido, utiliza 'mode' (ex: me2, me1).
+    """
+    shipping = produto.get("shipping") or {}
+    logistic_type = shipping.get("logistic_type") or ""
+
+    if logistic_type and logistic_type != "not_specified":
+        return LOGISTIC_LABELS.get(logistic_type, logistic_type.replace("_", " ").title())
+
+    mode = shipping.get("mode") or ""
+    if mode and mode != "not_specified":
+        return LOGISTIC_LABELS.get(mode, mode.upper())
+
+    return "Não especificado"
+
+
 def _build_row(produto: dict) -> list:
     listing_id = produto.get("listing_type_id", "")
     return [
         _resolve_sku(produto),
         produto.get("id", ""),
         LISTING_LABELS.get(listing_id, listing_id),
+        _resolve_tipo_envio(produto),
         "SIM" if produto.get("catalog_listing") else "NÃO",
         produto.get("sold_quantity", 0),
     ]

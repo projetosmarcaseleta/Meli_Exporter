@@ -33,6 +33,19 @@ LISTING_LABELS = {
     "free":         "Grátis",
 }
 
+LOGISTIC_LABELS = {
+    "fulfillment":   "Fulfillment",
+    "cross_docking": "Cross Docking",
+    "drop_off":      "Drop Off",
+    "xd_drop_off":   "Agência ML",
+    "self_service":  "Flex",
+    "custom":        "Custom",
+    "me2":           "ME2",
+    "me1":           "ME1",
+    "not_specified": "Não especificado",
+}
+
+
 
 def _session() -> requests.Session:
     if not hasattr(_local, "session"):
