@@ -69,7 +69,7 @@ def _get(url: str, token: str) -> dict:
         resp.raise_for_status()
         return resp.json()
     except Exception as exc:
-        print(f"[API ERRO] GET {url} → {type(exc).__name__}: {exc}")
+        print(f"[API ERRO] GET {url} -> {type(exc).__name__}: {exc}")
         return {}
 
 
@@ -105,6 +105,32 @@ def get_products_batch(mlbs: list[str], token: str) -> dict:
             else:
                 print(f"[API BATCH] code={code} id={body.get('id') or body.get('message','?')}")
     except Exception as exc:
-        print(f"[API ERRO] batch {mlbs[:3]}... → {type(exc).__name__}: {exc}")
+        print(f"[API ERRO] batch {mlbs[:3]}... -> {type(exc).__name__}: {exc}")
 
     return results
+
+
+def search_items_by_seller_sku(user_id: str | int, sku: str, token: str) -> list[str]:
+    """
+    Busca os MLBs vinculados a um SKU (seller_sku) na conta do vendedor no Mercado Livre.
+    GET /users/{user_id}/items/search?seller_sku={sku}
+    """
+    if not user_id or not sku:
+        return []
+
+    import urllib.parse
+    sku_clean = str(sku).strip()
+    encoded = urllib.parse.quote(sku_clean)
+    
+    # 1. Busca por seller_sku
+    url = f"{API_BASE_URL}/users/{user_id}/items/search?seller_sku={encoded}"
+    data = _get(url, token)
+    results = data.get("results") or []
+    
+    # 2. Se não encontrou, tenta por sku direto
+    if not results and data.get("paging", {}).get("total", 0) == 0:
+        url_sku = f"{API_BASE_URL}/users/{user_id}/items/search?sku={encoded}"
+        data_sku = _get(url_sku, token)
+        results = data_sku.get("results") or []
+
+    return [str(m).strip().upper() for m in results if str(m).startswith("MLB")]
