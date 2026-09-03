@@ -1,199 +1,38 @@
-# 📦 Meli Exporter
+# Seleta Auditor ML
 
-Aplicação web em Flask para exportação, validação e auditoria avançada de anúncios do **Mercado Livre** com cruzamento de dados em tempo real da **AnyMarket** (via API REST e réplica de banco PostgreSQL).
+Auditoria de anúncios **Catálogo × Tradicional** no Mercado Livre — compara fotos, preços, status e atributos por SKU, com exportação para Excel.
 
----
+## Primeira vez — como iniciar
 
-## 🚀 Funcionalidades
+Para abrir o programa pela **primeira vez**, use o atalho:
 
-- **Exportação & Validação de MLBs:** Consulta em lote na API do Mercado Livre e cruza com a API REST da AnyMarket (`GET /v2/products`).
-- **Auditoria de Catálogo x Tradicional (por SKU):** Consulta rápida via réplica de leitura do PostgreSQL AnyMarket para identificar anúncios de catálogo e tradicionais vinculados a cada SKU.
-- **Relatório Excel Formatado:** Geração automática de planilhas `.xlsx` com formatação condicional de divergências, deltas e status.
-- **Auditoria Visual & Webhook:** Interface web interativa para aprovar/reprovar divergências e enviar auditorias para o Google Apps Script / Planilha Google.
-- **Pronto para Produção:** Suporte nativo a Gunicorn, Systemd, Nginx reverso, Docker e GitHub Actions CI/CD.
+**Seleta Auditor ML**
 
----
+Esse é o ponto de entrada do sistema. Ao executá-lo, o servidor local sobe e o navegador abre a interface do auditor.
 
-## 📁 Estrutura do Projeto
+> Se o atalho **Seleta Auditor ML** ainda não existir na sua máquina, peça à equipe de TI ou crie um atalho que inicie o servidor e abra http://127.0.0.1:3010/ no navegador.
 
-```text
-Meli_Exporter/
-├── ml_exporter/
-│   ├── app.py                 # Servidor Web Flask e rotas
-│   ├── exporter.py            # Lógica de extração e auditoria
-│   ├── compare.py             # Comparação e regras de divergência
-│   ├── anymarket_api.py       # Integração com API REST AnyMarket
-│   ├── api.py                 # Integração com API Mercado Livre
-│   ├── import_parser.py       # Leitor de planilhas de importação
-│   ├── config.py              # Leitura de variáveis de ambiente
-│   ├── requirements.txt       # Dependências Python
-│   └── templates/
-│       └── index.html         # Interface web
-├── deploy/
-│   ├── setup-vps.sh           # Script de configuração inicial na VPS
-│   ├── update-vps.sh          # Script de atualização rápida na VPS
-│   ├── meli-exporter.service  # Configuração do serviço Systemd
-│   └── nginx-meli-exporter.conf # Proxy reverso Nginx
-├── .github/workflows/
-│   └── deploy.yml             # Pipeline de CI/CD para deploy automático via SSH
-├── Dockerfile                 # Imagem Docker de produção
-├── docker-compose.yml         # Orquestração via Docker Compose
-├── .env.example               # Modelo de variáveis de ambiente
-└── README.md                  # Documentação do projeto
-```
+## Uso rápido
 
----
+1. Abra **Seleta Auditor ML**.
+2. Cole o **token do Mercado Livre** e clique em **Validar Token**.
+3. Informe os **SKUs** (ou importe uma planilha).
+4. Clique em **Auditar Catálogo vs Tradicional**.
+5. Revise os resultados e use **Exportar Todos** para baixar a planilha.
 
-## ⚙️ Configuração de Ambiente (.env)
+## Configuração (opcional)
 
-Copie o arquivo [.env.example](.env.example) para `.env` e preencha com as credenciais necessárias:
+Copie .env.example para .env na pasta Meli_Exporter e preencha as variáveis necessárias (token ML, credenciais AnyMarket, etc.).
 
-```bash
-cp .env.example .env
-```
+## Estrutura
 
-### Principais Variáveis:
-| Variável | Descrição | Padrão |
-| :--- | :--- | :--- |
-| `PORT` | Porta onde o servidor Flask/Gunicorn escuta | `3002` |
-| `FLASK_DEBUG` | Modo debug do Flask (`1` para dev, `0` para prod) | `0` |
-| `SECRET_KEY` | Chave secreta da sessão Flask | `sua_chave_secreta` |
-| `PUBLIC_EXPORT_URL` | URL pública da aplicação | `https://app.marcaseleta.shop/export` |
-| `GUMGA_TOKEN` | Token da AnyMarket para consultas REST | - |
-| `ANYMARKET_PLATFORM` | Plataforma AnyMarket | `SELETA` |
-| `ANYMARKET_DB_HOST` | Host da réplica de leitura PostgreSQL | - |
-| `ANYMARKET_DB_USER` | Usuário do banco PostgreSQL | - |
-| `ANYMARKET_DB_PASSWORD` | Senha do banco PostgreSQL | - |
+| Pasta / arquivo | Descrição |
+|---|---|
+| ml_exporter/app.py | Servidor Flask |
+| ml_exporter/templates/index.html | Interface web |
+| ml_exporter/exporter.py | Busca ML + cruzamento Catálogo/Tradicional |
+| scripts/ | Scripts de teste e diagnóstico |
 
----
+## Produção
 
-## 💻 Como Rodar Localmente
-
-### 🪟 No Windows (PowerShell):
-```powershell
-# 1. Ativar o ambiente virtual (ou criar com py -3.13 -m venv venv)
-.\venv\Scripts\Activate.ps1
-
-# 2. Instalar dependências
-pip install -r ml_exporter/requirements.txt
-
-# 3. Iniciar a aplicação
-python ml_exporter/app.py
-```
-Acesse em: **[http://localhost:3002](http://localhost:3002)**
-
----
-
-## 🐳 Como Rodar com Docker
-
-### Usando Docker Compose:
-```bash
-# Build e inicialização
-docker compose up -d --build
-
-# Ver logs
-docker compose logs -f
-```
-
-### Usando Docker CLI direto:
-```bash
-docker build -t meli-exporter .
-docker run -d --name meli-exporter -p 3002:3002 --env-file .env meli-exporter
-```
-
----
-
-## 🌐 Deploy na VPS (Ubuntu / Debian)
-
-### Opção 1 — Setup Rápido com o Script Automático
-
-Na sua VPS, execute como `root` ou `sudo`:
-
-```bash
-# 1. Baixar e rodar o script de setup
-curl -sSL https://raw.githubusercontent.com/projetosmarcaseleta/Meli_Exporter/main/deploy/setup-vps.sh | bash
-```
-> O script instala dependências do sistema, clona o repositório em `/var/www/Meli_Exporter`, cria o ambiente virtual, configura o serviço Systemd e prepara o Nginx.
-
-Após executar o setup:
-1. Edite o arquivo `/var/www/Meli_Exporter/.env` com seus tokens reais.
-2. Reinicie o serviço: `sudo systemctl restart meli-exporter`.
-
----
-
-### Opção 2 — Instalação Manual Passo a Passo
-
-1. **Instalar pacotes do sistema:**
-   ```bash
-   sudo apt-get update
-   sudo apt-get install -y python3 python3-venv python3-pip git libpq-dev nginx
-   ```
-
-2. **Clonar repositório:**
-   ```bash
-   sudo mkdir -p /var/www
-   cd /var/www
-   sudo git clone https://github.com/projetosmarcaseleta/Meli_Exporter.git
-   cd Meli_Exporter
-   ```
-
-3. **Criar venv e instalar dependências:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r ml_exporter/requirements.txt
-   ```
-
-4. **Configurar variáveis de ambiente:**
-   ```bash
-   cp .env.example .env
-   nano .env  # Insira seus tokens e salve
-   ```
-
-5. **Configurar serviço Systemd:**
-   ```bash
-   sudo cp deploy/meli-exporter.service /etc/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable meli-exporter
-   sudo systemctl start meli-exporter
-   ```
-
-6. **Configurar Nginx e SSL (Certbot):**
-   ```bash
-   sudo cp deploy/nginx-meli-exporter.conf /etc/nginx/sites-available/meli-exporter.conf
-   sudo ln -sf /etc/nginx/sites-available/meli-exporter.conf /etc/nginx/sites-enabled/
-   sudo nginx -t && sudo systemctl reload nginx
-
-   # Configurar SSL Grátis com Let's Encrypt:
-   sudo apt-get install -y certbot python3-certbot-nginx
-   sudo certbot --nginx -d app.marcaseleta.shop
-   ```
-
----
-
-## 🔄 Como Atualizar a VPS
-
-Quando fizer novos commits no GitHub, basta rodar na VPS:
-```bash
-bash /var/www/Meli_Exporter/deploy/update-vps.sh
-```
-
-Ou, se configurou os segredos de SSH (`SSH_HOST`, `SSH_USER`, `SSH_PRIVATE_KEY`) no repositório do GitHub, os deploys ocorrerão **automaticamente** a cada `push` na branch `main` via **GitHub Actions**.
-
----
-
-## 🛠️ Comandos Úteis na VPS
-
-```bash
-# Ver status do serviço
-sudo systemctl status meli-exporter
-
-# Ver logs em tempo real
-sudo journalctl -u meli-exporter -f
-
-# Reiniciar serviço
-sudo systemctl restart meli-exporter
-
-# Testar health check local
-curl http://127.0.0.1:3002/health
-```
+Deploy documentado em deploy/ (VPS, nginx, systemd). URL pública padrão: https://app.marcaseleta.shop/export

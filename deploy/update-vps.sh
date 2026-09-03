@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# update-vps.sh - Atualiza o repositório e reinicia a aplicação
+# update-vps.sh - Atualiza Meli Exporter na VPS
 # Uso: bash /var/www/Meli_Exporter/deploy/update-vps.sh
 # ============================================================
 
